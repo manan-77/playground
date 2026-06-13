@@ -1,0 +1,90 @@
+[
+  {
+    "historyId": "SH-2001",
+    "transactionId": "DEP-1001",
+    "stockId": 1,
+    "ticker": "AAPL",
+    "stockPrice": 168.42,
+    "purchaseAmount": 2021.04,
+    "quantityBought": 12,
+    "date": "2025-09-05",
+    "timestamp": "2025-09-05T15:30:00.000Z"
+  },
+  {
+    "historyId": "SH-2002",
+    "transactionId": "DEP-1002",
+    "stockId": 1,
+    "ticker": "AAPL",
+    "stockPrice": 191.1,
+    "purchaseAmount": 1146.6,
+    "quantityBought": 6,
+    "date": "2026-01-12",
+    "timestamp": "2026-01-12T15:30:00.000Z"
+  },
+  {
+    "historyId": "SH-2003",
+    "transactionId": "DEP-1003",
+    "stockId": 2,
+    "ticker": "MSFT",
+    "stockPrice": 402.55,
+    "purchaseAmount": 2012.75,
+    "quantityBought": 5,
+    "date": "2025-09-18",
+    "timestamp": "2025-09-18T15:30:00.000Z"
+  },
+  {
+    "historyId": "SH-2004",
+    "transactionId": "DEP-1004",
+    "stockId": 3,
+    "ticker": "NVDA",
+    "stockPrice": 98.2,
+    "purchaseAmount": 1964,
+    "quantityBought": 20,
+    "date": "2025-11-20",
+    "timestamp": "2025-11-20T15:30:00.000Z"
+  },
+  {
+    "historyId": "SH-2005",
+    "transactionId": "DEP-1001",
+    "stockId": 3,
+    "ticker": "NVDA",
+    "stockPrice": 120.44,
+    "purchaseAmount": 963.52,
+    "quantityBought": 8,
+    "date": "2026-03-03",
+    "timestamp": "2026-03-03T15:30:00.000Z"
+  },
+  {
+    "historyId": "SH-2006",
+    "transactionId": "DEP-1002",
+    "stockId": 4,
+    "ticker": "TSLA",
+    "stockPrice": 205.66,
+    "purchaseAmount": 1439.62,
+    "quantityBought": 7,
+    "date": "2025-12-01",
+    "timestamp": "2025-12-01T15:30:00.000Z"
+  },
+  {
+    "historyId": "SH-2007",
+    "transactionId": "DEP-1003",
+    "stockId": 5,
+    "ticker": "AMZN",
+    "stockPrice": 171.3,
+    "purchaseAmount": 1541.7,
+    "quantityBought": 9,
+    "date": "2026-02-10",
+    "timestamp": "2026-02-10T15:30:00.000Z"
+  },
+  {
+    "historyId": "SH-2008",
+    "transactionId": "DEP-1004",
+    "stockId": 10,
+    "ticker": "KO",
+    "stockPrice": 60.1,
+    "purchaseAmount": 1502.5,
+    "quantityBought": 25,
+    "date": "2026-05-22",
+    "timestamp": "2026-05-22T15:30:00.000Z"
+  }
+]

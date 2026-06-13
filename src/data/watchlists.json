@@ -1,0 +1,32 @@
+[
+  {
+    "id": "wl-1",
+    "name": "Tech & Internet",
+    "tickers": [
+      "GOOGL",
+      "META",
+      "NFLX",
+      "UBER"
+    ]
+  },
+  {
+    "id": "wl-2",
+    "name": "Banks & Fintech",
+    "tickers": [
+      "JPM",
+      "BAC",
+      "V",
+      "PYPL"
+    ]
+  },
+  {
+    "id": "wl-3",
+    "name": "Consumer & Growth",
+    "tickers": [
+      "COST",
+      "SBUX",
+      "DIS",
+      "AMD"
+    ]
+  }
+]

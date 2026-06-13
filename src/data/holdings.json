@@ -1,0 +1,32 @@
+[
+  {
+    "ticker": "AAPL",
+    "shares": 18,
+    "avgCost": 175.98
+  },
+  {
+    "ticker": "MSFT",
+    "shares": 5,
+    "avgCost": 402.55
+  },
+  {
+    "ticker": "NVDA",
+    "shares": 28,
+    "avgCost": 104.55
+  },
+  {
+    "ticker": "TSLA",
+    "shares": 7,
+    "avgCost": 205.66
+  },
+  {
+    "ticker": "AMZN",
+    "shares": 9,
+    "avgCost": 171.3
+  },
+  {
+    "ticker": "KO",
+    "shares": 25,
+    "avgCost": 60.1
+  }
+]

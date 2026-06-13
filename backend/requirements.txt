@@ -1,0 +1,9 @@
+# Web backend
+fastapi>=0.110
+uvicorn[standard]>=0.29
+requests>=2.31
+python-dotenv>=1.0
+
+# Azure AI Foundry Agent Service (only needed once you wire up Foundry)
+azure-ai-projects>=1.0.0b1
+azure-identity>=1.16
