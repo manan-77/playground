@@ -13,7 +13,7 @@ _UA = {"User-Agent": "Mozilla/5.0"}
 _CHART = "https://query1.finance.yahoo.com/v8/finance/chart/{t}?interval=1d&range=1mo"
 _QS = (
     "https://query2.finance.yahoo.com/v10/finance/quoteSummary/{t}"
-    "?modules=assetProfile,financialData,summaryDetail,price&crumb={c}"
+    "?modules=assetProfile,financialData,summaryDetail,defaultKeyStatistics,price&crumb={c}"
 )
 
 
@@ -23,6 +23,23 @@ def _money(v):
 
 def _pct(v):
     return f"{v * 100:.2f}%" if isinstance(v, (int, float)) else "N/A"
+
+
+def _big_money(v):
+    """Market-cap style: $2.95T / $812.40B / $9.30M."""
+    if not isinstance(v, (int, float)):
+        return "N/A"
+    if abs(v) >= 1e12:
+        return f"${v / 1e12:,.2f}T"
+    if abs(v) >= 1e9:
+        return f"${v / 1e9:,.2f}B"
+    if abs(v) >= 1e6:
+        return f"${v / 1e6:,.2f}M"
+    return f"${v:,.0f}"
+
+
+def _ratio(v):
+    return f"{v:.2f}" if isinstance(v, (int, float)) else "N/A"
 
 
 def _fetch_chart(ticker: str) -> dict:
@@ -59,6 +76,8 @@ def fetch_live_stock_context(ticker: str) -> str:
         qs = _fetch_quote_summary(ticker)
         profile = qs.get("assetProfile", {})
         fin = qs.get("financialData", {})
+        summary = qs.get("summaryDetail", {})
+        stats = qs.get("defaultKeyStatistics", {})
 
         def num(d, k):
             v = d.get(k)
@@ -69,6 +88,10 @@ Company Name: {meta.get('longName', 'N/A')}
 Sector: {profile.get('sector', 'N/A')}
 Industry: {profile.get('industry', 'N/A')}
 Business Summary: {profile.get('longBusinessSummary', 'N/A')}
+Market Cap: {_big_money(num(summary, 'marketCap') or num(qs.get('price', {}), 'marketCap'))}
+Trailing P/E: {_ratio(num(summary, 'trailingPE'))}
+Forward P/E: {_ratio(num(summary, 'forwardPE'))}
+EPS (trailing): {_money(num(stats, 'trailingEps'))}
 Current Market Price: {_money(meta.get('regularMarketPrice'))}
 Previous Close: {_money(meta.get('chartPreviousClose'))}
 52 Week High: {_money(meta.get('fiftyTwoWeekHigh'))}

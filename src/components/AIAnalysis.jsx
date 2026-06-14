@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { analyzeStock } from '../lib/ai.js'
+import AIAnswer from './AIAnswer.jsx'
 
 const SUGGESTIONS = [
   'Analyze the risk given its price vs its 52-week high.',
@@ -65,7 +66,7 @@ export default function AIAnalysis({ ticker }) {
             <div className="fh-note" style={{ marginBottom: 12 }}>{state.data.answer}</div>
           )}
           {state.data.configured && state.data.answer && (
-            <div className="ai-answer">{state.data.answer}</div>
+            <div className="ai-answer"><AIAnswer text={state.data.answer} /></div>
           )}
           {state.data.configured && state.data.error && (
             <div className="fh-note" style={{ marginBottom: 12 }}>Foundry error: {state.data.error}</div>

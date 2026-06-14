@@ -6,6 +6,7 @@ import TransactionsPage from './pages/TransactionsPage.jsx'
 import TransferPage from './pages/TransferPage.jsx'
 import ProfilePage from './pages/ProfilePage.jsx'
 import TopNav from './components/TopNav.jsx'
+import ChatWidget from './components/ChatWidget.jsx'
 
 export default function App() {
   return (
@@ -20,6 +21,7 @@ export default function App() {
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="*" element={<HomePage />} />
       </Routes>
+      <ChatWidget />
     </>
   )
 }
