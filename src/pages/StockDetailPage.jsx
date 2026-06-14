@@ -16,9 +16,10 @@ import { getProfile, useFinnhub } from '../lib/finnhub.js'
 export default function StockDetailPage() {
   const { ticker } = useParams()
   const navigate = useNavigate()
-  const { stocks, getHolding, totalValue, loading, loadHistory, watchlists } = usePortfolio()
+  const { stocks, getHolding, totalValue, loading, loadHistory, ensureStock, watchlists } = usePortfolio()
   const [tf, setTf] = useState('1D')
   const [scrub, setScrub] = useState(null)
+  const [resolving, setResolving] = useState(false)
 
   const stock = stocks[ticker]
   const holding = getHolding(ticker)
@@ -29,11 +30,19 @@ export default function StockDetailPage() {
     if (stock) loadHistory(ticker, tf)
   }, [stock, ticker, tf, loadHistory])
 
+  // Resolve symbols that aren't in the seeded universe (e.g. an ETF opened from
+  // search) by fetching a live quote on demand.
+  useEffect(() => {
+    if (stock) return
+    setResolving(true)
+    ensureStock(ticker).finally(() => setResolving(false))
+  }, [stock, ticker, ensureStock])
+
   if (!stock) {
     return (
       <div className="app-shell">
         <button className="back-link" onClick={() => navigate(-1)}>‹ Back</button>
-        <div className="empty">{loading ? 'Loading…' : `Unknown ticker “${ticker}”.`}</div>
+        <div className="empty">{loading || resolving ? 'Loading…' : `Unknown ticker “${ticker}”.`}</div>
       </div>
     )
   }

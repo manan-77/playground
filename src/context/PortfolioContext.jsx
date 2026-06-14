@@ -28,30 +28,38 @@ function loadProfile() {
   }
 }
 
-// Combine synthetic metadata with a live Yahoo quote into a stock record.
-function buildStock(ticker, quote) {
-  const m = META[ticker]
+// Combine a live Yahoo quote with whatever synthetic metadata we have into a
+// stock record. Seeded universe tickers carry synthetic sector/P-E/ratings;
+// symbols discovered via search (ETFs, anything else) have no META, so those
+// fields degrade gracefully to null / "N/A".
+function buildStock(ticker, quote, extra = {}) {
+  const m = META[ticker] || {}
+  const name = quote.name || m.name || extra.name || ticker
+  const sector = m.sector || extra.sector || null
+  const rating = m.rating || null
   return {
     ticker,
-    name: quote.name || m.name,
+    name,
     price: quote.price,
     prevClose: quote.prevClose,
-    sector: m.sector,
+    sector,
     source: 'Yahoo Finance',
     asOf: quote.asOf,
     history: { '1D': quote.series }, // other timeframes loaded lazily
     company: {
-      description: m.desc,
-      sector: m.sector,
+      description: m.desc || `${name} — live market data from Yahoo Finance.`,
+      sector,
       volume: quote.volume, // real
       avgVolume: quote.volume, // chart endpoint gives only current volume
       marketCap: null, // not exposed by the chart endpoint
-      peRatio: m.peRatio, // synthetic
+      peRatio: m.peRatio ?? null, // synthetic; unknown for searched symbols
       high52: quote.high52, // real
       low52: quote.low52, // real
     },
-    analyst: { consensus: consensusOf(m.rating), priceTarget: Math.round(quote.price * m.targetMult * 100) / 100, ...m.rating },
-    news: newsFor(quote.name || m.name, ticker),
+    analyst: rating
+      ? { consensus: consensusOf(rating), priceTarget: Math.round(quote.price * (m.targetMult ?? 1) * 100) / 100, ...rating }
+      : { consensus: 'N/A', priceTarget: quote.price, buy: 0, hold: 0, sell: 0 },
+    news: newsFor(name, ticker),
   }
 }
 
@@ -122,24 +130,38 @@ export function PortfolioProvider({ children }) {
   stocksRef.current = stocks
   const inflight = useRef(new Set())
 
-  // Initial load: fetch a live quote for every ticker in the universe.
+  // Initial load: fetch a live quote for every ticker in the universe. With
+  // stocks + ETFs the universe is sizable, so fetch in limited-concurrency
+  // batches (avoids a request storm / Yahoo rate-limiting) and flush each batch
+  // into state as it resolves so rows paint progressively.
   useEffect(() => {
     let cancelled = false
+    const BATCH = 8
     setLoading(true)
     setError(null)
     ;(async () => {
-      const settled = await Promise.allSettled(
-        UNIVERSE.map(async (m) => buildStock(m.ticker, await fetchQuote(m.ticker))),
-      )
-      if (cancelled) return
-      const map = {}
-      for (const r of settled) if (r.status === 'fulfilled') map[r.value.ticker] = r.value
-      if (Object.keys(map).length === 0) {
-        const reason = settled.find((r) => r.status === 'rejected')?.reason
-        setError(reason?.message || 'Could not reach Yahoo Finance.')
-      } else {
-        setStocks(map)
+      let resolved = 0
+      let lastError = null
+      for (let i = 0; i < UNIVERSE.length; i += BATCH) {
+        if (cancelled) return
+        const slice = UNIVERSE.slice(i, i + BATCH)
+        const settled = await Promise.allSettled(
+          slice.map(async (m) => buildStock(m.ticker, await fetchQuote(m.ticker))),
+        )
+        if (cancelled) return
+        const map = {}
+        for (const r of settled) {
+          if (r.status === 'fulfilled') map[r.value.ticker] = r.value
+          else lastError = r.reason
+        }
+        if (Object.keys(map).length) {
+          resolved += Object.keys(map).length
+          setStocks((prev) => ({ ...prev, ...map }))
+          setLoading(false) // first rows are in — let the UI render
+        }
       }
+      if (cancelled) return
+      if (resolved === 0) setError(lastError?.message || 'Could not reach Yahoo Finance.')
       setLoading(false)
     })()
     return () => {
@@ -162,6 +184,26 @@ export function PortfolioProvider({ children }) {
       })
     } catch {
       // leave it unloaded; the chart shows its loading state
+    } finally {
+      inflight.current.delete(key)
+    }
+  }, [])
+
+  // Lazily fetch a quote for a symbol not in the seeded universe (e.g. an ETF
+  // opened from search) and cache it so the detail page can render it. Returns
+  // true if the symbol resolved to a live quote.
+  const ensureStock = useCallback(async (ticker, extra = {}) => {
+    const t = ticker.toUpperCase()
+    if (stocksRef.current[t]) return true
+    const key = `quote:${t}`
+    if (inflight.current.has(key)) return false
+    inflight.current.add(key)
+    try {
+      const stock = buildStock(t, await fetchQuote(t), extra)
+      setStocks((prev) => (prev[t] ? prev : { ...prev, [t]: stock }))
+      return true
+    } catch {
+      return false // unknown/unreachable ticker — detail page shows its message
     } finally {
       inflight.current.delete(key)
     }
@@ -230,6 +272,7 @@ export function PortfolioProvider({ children }) {
     updateProfile,
     getHolding: (ticker) => holdings.find((h) => h.ticker === ticker) || null,
     loadHistory,
+    ensureStock,
     buy,
     sell,
     transfer,

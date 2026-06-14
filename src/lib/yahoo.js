@@ -61,3 +61,25 @@ export async function fetchHistory(ticker, tf) {
   const { meta, series } = await fetchChart(ticker, tf)
   return tf === '1D' ? withBaseline(series, meta) : series
 }
+
+// Symbol lookup against Yahoo's search endpoint — returns equities, ETFs, and
+// other instruments matching the query. Used by the search modal so any listed
+// symbol (not just the seeded universe) can be found and opened.
+export async function searchSymbols(query) {
+  const q = query.trim()
+  if (!q) return []
+  const res = await fetch(
+    `/yf/v1/finance/search?q=${encodeURIComponent(q)}&quotesCount=12&newsCount=0&enableFuzzyQuery=false`,
+  )
+  if (!res.ok) throw new Error(`Yahoo search "${q}": HTTP ${res.status}`)
+  const json = await res.json()
+  return (json?.quotes || [])
+    // Keep tradable, dollar-denominated instruments (drop futures, FX, indices).
+    .filter((r) => r.symbol && ['EQUITY', 'ETF', 'MUTUALFUND'].includes(r.quoteType))
+    .map((r) => ({
+      ticker: r.symbol.toUpperCase(),
+      name: r.longname || r.shortname || r.symbol,
+      type: r.quoteType === 'ETF' ? 'ETF' : r.quoteType === 'MUTUALFUND' ? 'Fund' : 'Stock',
+      exchange: r.exchDisp || r.exchange || '',
+    }))
+}
